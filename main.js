@@ -97,79 +97,37 @@ fevereiro.adicionarLancamento(
 marco.adicionarLancamento(new Lancamento('Escola', 'Escola', 'despesa', 500))
 ano.calcularSaldo()
 
-console.log(ano.meses)
-
-function addElement(parent, elementType, text) {
-  const element = document.createElement(elementType)
-  if (text !== '' && text !== undefined && text !== null) {
-    element.innerText = text
+class Select {
+  constructor(id) {
+    this.element = document.createElement('select')
+    this.element.id = id
   }
-  parent.appendChild(element)
+  addOption(text) {
+    const option = document.createElement('option')
+    option.text = text
+    this.element.appendChild(option)
+  }
 }
 
-function renderizar() {
-  const app = document.getElementById('app')
-  if (app.firstChild) {
-    app.firstChild.remove()
+class Input {
+  constructor(id, type, placeholder) {
+    this.element = document.createElement('input')
+    this.element.id = id
+    this.element.type = type
+    this.element.placeholder = placeholder
   }
-  const painel = document.createElement('div')
-  const cores = ['red', 'yellow', 'green', 'blue']
-  const grafico = document.createElement('div')
-  grafico.className = 'grafico'
-  for (const mes of ano.meses) {
-    const coluna = document.createElement('div')
-    coluna.className = 'grafico-coluna'
-    const cor = document.createElement('div')
-    cor.style.height = (mes.totalizador.saldo * 100) / 1000 + 'px'
-    cor.style.background = cores.pop()
-    coluna.appendChild(cor)
-    const nomeDoMes = document.createElement('div')
-    nomeDoMes.className = 'grafico-coluna-texto'
-    nomeDoMes.innerText = mes.nome
-    coluna.appendChild(cor)
-    coluna.appendChild(nomeDoMes)
-    grafico.appendChild(coluna)
-  }
-  painel.appendChild(grafico)
-
-  for (const mes of ano.meses) {
-    addElement(painel, 'h4', mes.nome)
-    const tabelaLancamentos = document.createElement('table')
-    tabelaLancamentos.className = 'tabela-lancamentos'
-    const linhaTitulo = document.createElement('tr')
-    addElement(linhaTitulo, 'th', 'Descricao')
-    addElement(linhaTitulo, 'th', 'Categoria')
-    addElement(linhaTitulo, 'th', 'Valor')
-    tabelaLancamentos.appendChild(linhaTitulo)
-    for (const lancamento of mes.lancamentos) {
-      const linhaLancamento = document.createElement('tr')
-      addElement(linhaLancamento, 'td', lancamento.descricao)
-      addElement(linhaLancamento, 'td', lancamento.categoria)
-      addElement(linhaLancamento, 'td', formatarDinheiro(lancamento.valor))
-      tabelaLancamentos.appendChild(linhaLancamento)
-    }
-    const linhaJuros = document.createElement('tr')
-    addElement(linhaJuros, 'th', 'Juros')
-    addElement(linhaJuros, 'th', formatarDinheiro(mes.totalizador.juros))
-    tabelaLancamentos.appendChild(linhaJuros)
-    const linhaRendimentos = document.createElement('tr')
-    addElement(linhaRendimentos, 'th', 'Rendimentos')
-    addElement(
-      linhaRendimentos,
-      'th',
-      formatarDinheiro(mes.totalizador.rendimentos)
-    )
-    tabelaLancamentos.appendChild(linhaRendimentos)
-    const linhaSaldo = document.createElement('tr')
-    addElement(linhaSaldo, 'th', 'Total')
-    addElement(linhaSaldo, 'th', formatarDinheiro(mes.totalizador.saldo))
-    tabelaLancamentos.appendChild(linhaSaldo)
-    painel.appendChild(tabelaLancamentos)
-  }
-  app.appendChild(painel)
 }
 
-renderizar()
+class Button {
+  constructor(id, text) {
+    this.element = document.createElement('button')
+    this.element.id = id
+    this.element.innerText = text
+  }
+  addListener(fn) {
+    this.element.addEventListener('click', fn)
+  }
+}
 
 function adicionarLancamento() {
   const mes = document.getElementById('mes')
@@ -195,12 +153,74 @@ function adicionarLancamento() {
   valor.value = ''
 }
 
-const botao = document.getElementById('botao')
-botao.addEventListener('click', adicionarLancamento)
+function renderizar() {
+  const app = document.getElementById('app')
+  if (app.firstChild) {
+    app.firstChild.remove()
+  }
+  const painel = new Div()
+  const titulo = new h4('Finanças Pessoais')
+  painel.adicionarElementoFilho(titulo.element)
+  const form = new Div('form-lancamento')
+  const mesSelect = new Select('mes')
+  for (const mes of ano.meses) {
+    mesSelect.addOption(mes.nome)
+  }
 
-const mesSelect = document.getElementById('mes')
-for (const mes of ano.meses) {
-  const option = document.createElement('option')
-  option.text = mes.nome
-  mesSelect.add(option)
+  const tipoSelect = new Select('tipo')
+  tipoSelect.addOption('receita')
+  tipoSelect.addOption('despesa')
+  const descricaoInputText = new Input('descricao', 'text', 'Descrição')
+  const categoriaInputText = new Input('categoria', 'text', 'Categoria')
+  const valorInputText = new Input('valor', 'number', 'Valor')
+  const adicionarButton = new Button('botao', 'Adicionar')
+  adicionarButton.addListener(() => {
+    adicionarLancamento()
+  })
+  form.adicionarElementoFilho(mesSelect.element)
+  form.adicionarElementoFilho(tipoSelect.element)
+  form.adicionarElementoFilho(descricaoInputText.element)
+  form.adicionarElementoFilho(categoriaInputText.element)
+  form.adicionarElementoFilho(valorInputText.element)
+  form.adicionarElementoFilho(adicionarButton.element)
+  painel.adicionarElementoFilho(form.element)
+
+  const grafico = new Grafico()
+  for (const mes of ano.meses) {
+    grafico.adicionarColuna(mes.totalizador.saldo, mes.nome)
+  }
+  painel.adicionarElementoFilho(grafico.element)
+
+  for (const mes of ano.meses) {
+    const nomeDoMes = new h4(mes.nome)
+    painel.adicionarElementoFilho(nomeDoMes.element)
+
+    const tabelaLancamentos = new Tabela('tabela-lancamentos')
+    tabelaLancamentos.addRow('th', ['Descrição', 'Categoria', 'Valor'])
+
+    for (const lancamento of mes.lancamentos) {
+      tabelaLancamentos.addRow('td', [
+        lancamento.descricao,
+        lancamento.categoria,
+        formatarDinheiro(lancamento.getValorString())
+      ])
+    }
+    tabelaLancamentos.addRow('th', [
+      'Juros',
+      formatarDinheiro(mes.totalizador.juros)
+    ])
+    tabelaLancamentos.addRow('th', [
+      'Rendimentos',
+      formatarDinheiro(mes.totalizador.rendimentos)
+    ])
+    tabelaLancamentos.addRow('th', [
+      'Total',
+      formatarDinheiro(mes.totalizador.saldo)
+    ])
+
+    painel.adicionarElementoFilho(tabelaLancamentos.element)
+  }
+  app.appendChild(painel.element)
 }
+
+renderizar()

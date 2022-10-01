@@ -18,7 +18,7 @@ class Tela {
           lancamento.descricao,
           lancamento.categoria,
           lancamento.tipo,
-          lancamento.valor
+          parseFloat(lancamento.valor)
         )
       )
     }
@@ -56,6 +56,7 @@ class Tela {
         mes: mes.value,
         descricao: descricao.value,
         categoria: categoria.value,
+        tipo: tipo.value,
         valor: parseFloat(valor.value)
       })
     })
@@ -69,10 +70,6 @@ class Tela {
   }
 
   renderizar() {
-    // const app = document.getElementById('app')
-    // if (app.firstChild) {
-    //   app.firstChild.remove()
-    // }
     document.getElementById('app').remove()
     const app = new Div('app')
     const titulo = new h4('Finanças Pessoais')

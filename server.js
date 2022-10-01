@@ -1,129 +1,30 @@
 const express = require('express')
+const pgp = require('pg-promise')
+
 const app = express()
 app.use(express.json())
 app.use('/', express.static('./client'))
 
-const lancamentos = [
-  {
-    mes: 'janeiro',
-    descricao: 'test',
-    categoria: 'Salário',
-    tipo: 'receita',
-    valor: 4000
-  },
-  {
-    mes: 'janeiro',
-    descricao: 'test',
-    categoria: 'Aluguel',
-    tipo: 'despesa',
-    valor: 1000
-  },
-  {
-    mes: 'janeiro',
-    descricao: 'test',
-    categoria: 'Conta de Luz',
-    tipo: 'despesa',
-    valor: 200
-  },
-  {
-    mes: 'janeiro',
-    descricao: 'test',
-    categoria: 'Conta de Água',
-    tipo: 'despesa',
-    valor: 100
-  },
-  {
-    mes: 'janeiro',
-    descricao: 'test',
-    categoria: 'Internet',
-    tipo: 'despesa',
-    valor: 100
-  },
-  {
-    mes: 'fevereiro',
-    descricao: 'test',
-    categoria: 'Salário',
-    tipo: 'receita',
-    valor: 3000
-  },
-  {
-    mes: 'fevereiro',
-    descricao: 'test',
-    categoria: 'Aluguel',
-    tipo: 'despesa',
-    valor: 1200
-  },
-  {
-    mes: 'fevereiro',
-    descricao: 'test',
-    categoria: 'Conta de Luz',
-    tipo: 'despesa',
-    valor: 250
-  },
-  {
-    mes: 'fevereiro',
-    descricao: 'test',
-    categoria: 'Conta de Água',
-    tipo: 'despesa',
-    valor: 100
-  },
-  {
-    mes: 'fevereiro',
-    descricao: 'test',
-    categoria: 'Internet',
-    tipo: 'despesa',
-    valor: 100
-  },
-  {
-    mes: 'marco',
-    descricao: 'test',
-    categoria: 'Salário',
-    tipo: 'receita',
-    valor: 4000
-  },
-  {
-    mes: 'marco',
-    descricao: 'test',
-    categoria: 'Aluguel',
-    tipo: 'despesa',
-    valor: 1200
-  },
-  {
-    mes: 'marco',
-    descricao: 'test',
-    categoria: 'Conta de Luz',
-    tipo: 'despesa',
-    valor: 200
-  },
-  {
-    mes: 'marco',
-    descricao: 'test',
-    categoria: 'Conta de Água',
-    tipo: 'despesa',
-    valor: 100
-  },
-  {
-    mes: 'marco',
-    descricao: 'test',
-    categoria: 'Internet',
-    tipo: 'despesa',
-    valor: 200
-  },
-  {
-    mes: 'abril',
-    descricao: 'test',
-    categoria: 'Salário',
-    tipo: 'receita',
-    valor: 4000
-  }
-]
+const connection = pgp()('postgres://postgres:123@localhost:5432/financas')
 
-app.get('/api/lancamentos', function (req, res) {
+app.get('/api/lancamentos', async function (req, res) {
+  const lancamentos = await connection.query(
+    'select * from financas_pessoais.lancamento'
+  )
   res.json(lancamentos)
 })
-app.post('/api/lancamentos', function (req, res) {
+app.post('/api/lancamentos', async function (req, res) {
   const lancamento = req.body
-  lancamentos.push(lancamento)
+  await connection.query(
+    'insert into financas_pessoais.lancamento (mes, descricao, categoria, tipo, valor) values ($1, $2, $3, $4, $5)',
+    [
+      lancamento.mes,
+      lancamento.descricao,
+      lancamento.categoria,
+      lancamento.tipo,
+      lancamento.valor
+    ]
+  )
   res.end()
 })
 

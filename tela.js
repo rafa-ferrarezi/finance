@@ -1,5 +1,0 @@
-class Tela {
-  constructor(params) {
-    
-  }
-}

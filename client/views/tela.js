@@ -18,7 +18,8 @@ class Tela {
           lancamento.descricao,
           lancamento.categoria,
           lancamento.tipo,
-          parseFloat(lancamento.valor)
+          parseFloat(lancamento.valor),
+          lancamento.idLancamento
         )
       )
     }
@@ -69,6 +70,15 @@ class Tela {
     valor.value = ''
   }
 
+  deletarLancamento(mes, lancamento) {
+    fetch(`http://localhost:3000/api/lancamentos/${lancamento.idLancamento}`, {
+      method: 'delete'
+    })
+    this.ano.deletarLancamento(mes, lancamento)
+    this.ano.calcularSaldo()
+    this.renderizar()
+  }
+
   renderizar() {
     document.getElementById('app').remove()
     const app = new Div('app')
@@ -112,11 +122,19 @@ class Tela {
       tabelaLancamentos.addRow('th', ['Descrição', 'Categoria', 'Valor'])
 
       for (const lancamento of mes.lancamentos) {
-        tabelaLancamentos.addRow('td', [
-          lancamento.descricao,
-          lancamento.categoria,
-          this.formatarDinheiro(lancamento.getValorString())
-        ])
+        const button = new Button('delete-lancamento', 'delete')
+        button.addListener(() => {
+          this.deletarLancamento(mes, lancamento)
+        })
+        tabelaLancamentos.addRow(
+          'td',
+          [
+            lancamento.descricao,
+            lancamento.categoria,
+            this.formatarDinheiro(lancamento.getValorString())
+          ],
+          [button]
+        )
       }
       tabelaLancamentos.addRow('th', [
         'Juros',
